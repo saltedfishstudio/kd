@@ -1,7 +1,4 @@
-/* Cheat that uses a driver for reading / writing virtual memory,
-instead of using Win32API Functions. Written By Zer0Mem0ry,
-https://www.youtube.com/watch?v=sJdBtPosWQs */
-
+#pragma once
 #include <Windows.h>
 
 /* IOCTL Codes needed for our driver */
@@ -34,7 +31,7 @@ typedef struct _KERNEL_READ_REQUEST
 	ULONG Response;
 	ULONG Size;
 
-} KERNEL_READ_REQUEST, *PKERNEL_READ_REQUEST;
+} KERNEL_READ_REQUEST, * PKERNEL_READ_REQUEST;
 
 typedef struct _KERNEL_WRITE_REQUEST
 {
@@ -44,7 +41,7 @@ typedef struct _KERNEL_WRITE_REQUEST
 	ULONG Value;
 	ULONG Size;
 
-} KERNEL_WRITE_REQUEST, *PKERNEL_WRITE_REQUEST;
+} KERNEL_WRITE_REQUEST, * PKERNEL_WRITE_REQUEST;
 
 
 
@@ -55,7 +52,7 @@ public:
 	HANDLE hDriver; // Handle to driver
 
 					// Initializer
-	KeInterface::KeInterface(LPCSTR RegistryPath)
+	KeInterface(LPCSTR RegistryPath)
 	{
 		hDriver = CreateFileA(RegistryPath, GENERIC_READ | GENERIC_WRITE,
 			FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);

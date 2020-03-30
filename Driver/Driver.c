@@ -186,8 +186,6 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject,
 	return STATUS_SUCCESS;
 }
 
-
-
 NTSTATUS UnloadDriver(PDRIVER_OBJECT pDriverObject)
 {
 	DbgPrintEx(0, 0, "Unload routine called.\n");
