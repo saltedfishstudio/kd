@@ -24,43 +24,6 @@ UNICODE_STRING dev, dos; // Driver registry paths
 
 ULONG csgoId, ClientAddress;
 
-// for char
-#define IOCTL_RPM CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
-
-typedef struct _vRWM {
-	ULONG		pID;
-	ULONG		size;
-	ULONG		dAddress;
-	BOOLEAN		write;
-	ULONG		topPtr; //BUFFER
-	ULONG		lowPtr; //RETVALUE
-} vRWM, * PRWM;
-
-NTSTATUS CopyMemory(PRWM vrwm)
-{
-	PEPROCESS					targetProc = NULL;
-	NTSTATUS status;
-
-	status = PsLookupProcessByProcessId((HANDLE)vrwm->pID, &targetProc);
-	if (NT_SUCCESS(status))
-	{
-		SIZE_T bytes;
-		if (vrwm->write && vrwm->dAddress)
-		{
-			if (vrwm->topPtr)
-				status = MmCopyVirtualMemory(PsGetCurrentProcess(), (PVOID)vrwm->topPtr, targetProc, (PVOID)vrwm->dAddress, vrwm->size, KernelMode, &bytes);
-		}
-		else {
-			status = MmCopyVirtualMemory(targetProc, (PVOID)vrwm->dAddress, PsGetCurrentProcess(), (PVOID)vrwm->lowPtr, vrwm->size, KernelMode, &bytes);
-		}
-	}
-
-	if (targetProc)
-		ObDereferenceObject(targetProc);
-
-	return status;
-}
-
 // datatype for read request
 typedef struct _KERNEL_READ_REQUEST
 {
@@ -206,21 +169,6 @@ NTSTATUS IoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 		DbgPrintEx(0, 0, "Module get %#010x", ClientAddress);
 		Status = STATUS_SUCCESS;
 		BytesIO = sizeof(*OutPut);
-	}
-	else if (ControlCode == IOCTL_RPM) {
-		BytesIO = 0;
-
-		PVOID pBuf = Irp->AssociatedIrp.SystemBuffer;
-		if (pBuf == NULL) {
-			Status = STATUS_INVALID_PARAMETER;
-		} else if ((stack->Parameters.DeviceIoControl.InputBufferLength) != (unsigned long)sizeof(vRWM)) { // 32x PTR to 64x PTR
-			Status = STATUS_INVALID_PARAMETER;
-		}
-		else
-		{
-			// FUNCTION THAT COPIES MEMORY
-			Status = CopyMemory((PRWM)pBuf);
-		}
 	}
 	else
 	{
