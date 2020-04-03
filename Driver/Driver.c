@@ -17,10 +17,49 @@ https://www.youtube.com/watch?v=sJdBtPosWQs */
 // Request to retrieve the base address of client.dll in csgo.exe from kernel space
 #define IO_GET_MODULE_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0704 /* Our Custom Code */, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
+NTKERNELAPI PVOID PsGetProcessSectionBaseAddress(__in PEPROCESS Process);
+
 PDEVICE_OBJECT pDeviceObject; // our driver object
 UNICODE_STRING dev, dos; // Driver registry paths
 
 ULONG csgoId, ClientAddress;
+
+// for char
+#define IOCTL_RPM CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
+
+typedef struct _vRWM {
+	ULONG		pID;
+	ULONG		size;
+	ULONG		dAddress;
+	BOOLEAN		write;
+	ULONG		topPtr; //BUFFER
+	ULONG		lowPtr; //RETVALUE
+} vRWM, * PRWM;
+
+NTSTATUS CopyMemory(PRWM vrwm)
+{
+	PEPROCESS					targetProc = NULL;
+	NTSTATUS status;
+
+	status = PsLookupProcessByProcessId((HANDLE)vrwm->pID, &targetProc);
+	if (NT_SUCCESS(status))
+	{
+		SIZE_T bytes;
+		if (vrwm->write && vrwm->dAddress)
+		{
+			if (vrwm->topPtr)
+				status = MmCopyVirtualMemory(PsGetCurrentProcess(), (PVOID)vrwm->topPtr, targetProc, (PVOID)vrwm->dAddress, vrwm->size, KernelMode, &bytes);
+		}
+		else {
+			status = MmCopyVirtualMemory(targetProc, (PVOID)vrwm->dAddress, PsGetCurrentProcess(), (PVOID)vrwm->lowPtr, vrwm->size, KernelMode, &bytes);
+		}
+	}
+
+	if (targetProc)
+		ObDereferenceObject(targetProc);
+
+	return status;
+}
 
 // datatype for read request
 typedef struct _KERNEL_READ_REQUEST
@@ -67,13 +106,35 @@ NTSTATUS KeWriteVirtualMemory(PEPROCESS Process, PVOID SourceAddress, PVOID Targ
 		return STATUS_ACCESS_DENIED;
 }
 
+DWORD64 GetSectionBaseAddress(HANDLE w_pid)
+{
+	NTSTATUS ntStatus = STATUS_SUCCESS;
+	PEPROCESS targetProcess;
+	PVOID value = 0;
+
+	ntStatus = PsLookupProcessByProcessId((HANDLE)w_pid, &targetProcess);
+
+	__try
+	{
+		KeAttachProcess((PKPROCESS)targetProcess);
+		value = PsGetProcessSectionBaseAddress(targetProcess);
+		KeDetachProcess();
+	}
+	__except (GetExceptionCode())
+	{
+		return 0;
+	}
+
+	return (DWORD64)value;
+}
+
 // set a callback for every PE image loaded to user memory
 // then find the client.dll & csgo.exe using the callback
 PLOAD_IMAGE_NOTIFY_ROUTINE ImageLoadCallback(PUNICODE_STRING FullImageName,
 	HANDLE ProcessId, PIMAGE_INFO ImageInfo)
 {
 	// Compare our string to input
-	if (wcsstr(FullImageName->Buffer, L"\\csgo\\bin\\client.dll")) {
+	if (wcsstr(FullImageName->Buffer, L"\\Riot Games\\League of Legends\\Game\\League of Legends.exe")) {
 		// if it matches
 		DbgPrintEx(0, 0, "Loaded Name: %ls \n", FullImageName->Buffer);
 		DbgPrintEx(0, 0, "Loaded To Process: %d \n", ProcessId);
@@ -146,6 +207,21 @@ NTSTATUS IoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 		Status = STATUS_SUCCESS;
 		BytesIO = sizeof(*OutPut);
 	}
+	else if (ControlCode == IOCTL_RPM) {
+		BytesIO = 0;
+
+		PVOID pBuf = Irp->AssociatedIrp.SystemBuffer;
+		if (pBuf == NULL) {
+			Status = STATUS_INVALID_PARAMETER;
+		} else if ((stack->Parameters.DeviceIoControl.InputBufferLength) != (unsigned long)sizeof(vRWM)) { // 32x PTR to 64x PTR
+			Status = STATUS_INVALID_PARAMETER;
+		}
+		else
+		{
+			// FUNCTION THAT COPIES MEMORY
+			Status = CopyMemory((PRWM)pBuf);
+		}
+	}
 	else
 	{
 		 // if the code is unknown
@@ -169,8 +245,8 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject,
 
 	PsSetLoadImageNotifyRoutine(ImageLoadCallback);
 
-	RtlInitUnicodeString(&dev, L"\\Device\\kernelhop");
-	RtlInitUnicodeString(&dos, L"\\DosDevices\\kernelhop");
+	RtlInitUnicodeString(&dev, L"\\Device\\cbl");
+	RtlInitUnicodeString(&dos, L"\\DosDevices\\cbl");
 
 	IoCreateDevice(pDriverObject, 0, &dev, FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN, FALSE, &pDeviceObject);
 	IoCreateSymbolicLink(&dos, &dev);
@@ -185,6 +261,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject,
 
 	return STATUS_SUCCESS;
 }
+
 
 NTSTATUS UnloadDriver(PDRIVER_OBJECT pDriverObject)
 {

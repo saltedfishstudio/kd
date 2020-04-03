@@ -22,6 +22,18 @@
 
 #define FFLAGS 0x00000100
 
+#define IOCTL_RPM CTL_CODE( FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_SPECIAL_ACCESS )
+
+typedef struct _RWM {
+	ULONG		pID;
+	ULONG		size;
+	ULONG		dAddress;
+	UCHAR		write;
+
+	PVOID		buffer;
+	PVOID		retValue;
+} RWM, * PRWM;
+
 
 typedef struct _KERNEL_READ_REQUEST
 {
@@ -78,6 +90,33 @@ public:
 			return (type)ReadRequest.Response;
 		else
 			return (type)false;
+	}
+
+
+	char* ReadStr(ULONG ProcessId, DWORD dAddress, ULONG size)
+	{
+		if (!dAddress || !ProcessId || !size) {
+			return (char*)"invalid 1";
+		}
+
+		RWM		mem;
+		DWORD	dwBytesRead = 0;
+
+		mem.pID = ProcessId;
+		mem.retValue = new char[size];
+		mem.size = size;
+		mem.dAddress = dAddress;
+		mem.write = 0;
+
+		if (!DeviceIoControl(hDriver, IOCTL_RPM, &mem, sizeof(RWM), NULL, NULL, &dwBytesRead, NULL))
+		{
+			const char* a = (const char*)mem.retValue;
+
+			delete[] mem.retValue;
+			return (char*)a;
+		}
+
+		return (char*)mem.retValue;
 	}
 
 	bool WriteVirtualMemory(ULONG ProcessId, ULONG WriteAddress,
