@@ -87,7 +87,7 @@ public:
 		// send code to our driver with the arguments
 		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest,
 			sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), 0, 0))
-			return (type)ReadRequest.Response;
+			return *(type*)&ReadRequest.Response;
 		else
 			return (type)false;
 	}

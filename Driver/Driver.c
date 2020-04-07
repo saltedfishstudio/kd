@@ -1,8 +1,3 @@
-/* Cheat that uses a driver for reading / writing virtual memory,
-instead of using Win32API Functions. Written By Zer0Mem0ry,
-https://www.youtube.com/watch?v=sJdBtPosWQs */
-
-
 #include "ntos.h"
 
 // Request to read virtual user memory (memory of a program) from kernel space
