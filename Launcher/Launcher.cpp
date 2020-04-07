@@ -34,9 +34,6 @@ int main()
 	DWORD ClientAddress = Driver.GetClientModule();
 	std::cout << "Found lol.exe ClientBase: 0x" << std::uppercase << std::hex << ClientAddress << std::endl;
 	
-	/*auto myName = Driver.ReadVirtualMemory<char*>(ProcessId, ClientAddress + 0x349A0E4 + 0x006C, sizeof(char*));
-	printf_s("myName %s", myName);*/
-	
 	// Get address of localplayer
 	DWORD LocalPlayer = Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + 0x349A0E4, sizeof(DWORD));
 	std::cout << "Found LocalPlayer in client.dll: 0x" << std::uppercase << std::hex << LocalPlayer << std::endl;
@@ -50,36 +47,55 @@ int main()
 	auto chat = Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + (__int32)Client::ChatClient, sizeof(DWORD));
 	printf_s("Chat : %d\n", chat);
 
-	//GET(Position, Vector3f, (__int32)oGameObject::oObjPos);
+	float xx = Driver.ReadVirtualMemory<float>(ProcessId, LocalPlayer + (__int32)oGameObject::oObjPos, sizeof(float));
+	float yy = Driver.ReadVirtualMemory<float>(ProcessId, LocalPlayer + (__int32)oGameObject::oObjPos + sizeof(float), sizeof(float));
+	float zz = Driver.ReadVirtualMemory<float>(ProcessId, LocalPlayer + (__int32)oGameObject::oObjPos + sizeof(float) + sizeof(float), sizeof(float));
+
+	printf_s("Position : %f %f %f\n", xx, yy, zz);
+
+	auto myName = Driver.ReadString(ProcessId, ClientAddress + 0x349A0E4 + 0x006C, sizeof(DWORD));
+	printf_s("myName %s", myName);
 	
+	//Sleep(3000);
+
+	//GET(Position, Vector3f, (__int32)oGameObject::oObjPos);
+
 	
 	//auto chatClient = *(DWORD*)(ClientAddress + (__int32)Client::ChatClient);
 	//printf_s("ChatClient : %d", chatClient);
 	
-	typedef void(__thiscall* fnPrintChat)(DWORD, const char*, int);
-	(Driver.ReadVirtualMemory<fnPrintChat>(ProcessId, ClientAddress + 0x349A0E4, sizeof(fnPrintChat)))
-	(chat, "Test", 0);
+	//typedef void(__thiscall* fnPrintChat)(DWORD, const char*, int);
+	//(Driver.ReadVirtualMemory<fnPrintChat>(ProcessId, ClientAddress + 0x349A0E4, sizeof(fnPrintChat)))
+	//(chat, "Test", 0);
 
-	while (true)
-	{
-		/*typedef void(__cdecl* fnDrawCircle)(Vector3f*, float, int*, int, int, int, float);
-		reinterpret_cast<fnDrawCircle>(ClientAddress + 0x4F8C40)(new Vector3f(100, 100, 100), 500, 0, 0, 0, 0, 1);*/
-		
-		// Constantly check if player is in ground
-		//DWORD InGround = Driver.ReadVirtualMemory<DWORD>(ProcessId, LocalPlayer + FFLAGS, sizeof(ULONG));
-		//// Check if space is down & player is in ground
-		//if ((GetAsyncKeyState(VK_SPACE) & 0x8000) && (InGround & 1 == 1))
-		//{
-		//	// Jump
-		//	Driver.WriteVirtualMemory(ProcessId, ClientAddress + FORCE_JUMP, 0x5, 8);
-		//	Sleep(50);
-		//	// Restore
-		//	Driver.WriteVirtualMemory(ProcessId, ClientAddress + FORCE_JUMP, 0x4, 8);
+	//while (true)
+	//{
+	//	//system("cls");
 
-		//}
-		
-		Sleep(10);
-	}
+	//	//xx = Driver.ReadVirtualMemory<float>(ProcessId, LocalPlayer + (__int32)oGameObject::oObjPos, sizeof(float));
+	//	//yy = Driver.ReadVirtualMemory<float>(ProcessId, LocalPlayer + (__int32)oGameObject::oObjPos + sizeof(float), sizeof(float));
+	//	//zz = Driver.ReadVirtualMemory<float>(ProcessId, LocalPlayer + (__int32)oGameObject::oObjPos + sizeof(float) + sizeof(float), sizeof(float));
+
+	//	//printf_s("Position : %f %f %f", xx, yy, zz);
+	//	
+	//	/*typedef void(__cdecl* fnDrawCircle)(Vector3f*, float, int*, int, int, int, float);
+	//	reinterpret_cast<fnDrawCircle>(ClientAddress + 0x4F8C40)(new Vector3f(100, 100, 100), 500, 0, 0, 0, 0, 1);*/
+	//	
+	//	// Constantly check if player is in ground
+	//	//DWORD InGround = Driver.ReadVirtualMemory<DWORD>(ProcessId, LocalPlayer + FFLAGS, sizeof(ULONG));
+	//	//// Check if space is down & player is in ground
+	//	//if ((GetAsyncKeyState(VK_SPACE) & 0x8000) && (InGround & 1 == 1))
+	//	//{
+	//	//	// Jump
+	//	//	Driver.WriteVirtualMemory(ProcessId, ClientAddress + FORCE_JUMP, 0x5, 8);
+	//	//	Sleep(50);
+	//	//	// Restore
+	//	//	Driver.WriteVirtualMemory(ProcessId, ClientAddress + FORCE_JUMP, 0x4, 8);
+
+	//	//}
+	//	
+	//	Sleep(10);
+	//}
 	return 0;
 }
 

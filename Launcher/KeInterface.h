@@ -22,19 +22,6 @@
 
 #define FFLAGS 0x00000100
 
-#define IOCTL_RPM CTL_CODE( FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_SPECIAL_ACCESS )
-
-typedef struct _RWM {
-	ULONG		pID;
-	ULONG		size;
-	ULONG		dAddress;
-	UCHAR		write;
-
-	PVOID		buffer;
-	PVOID		retValue;
-} RWM, * PRWM;
-
-
 typedef struct _KERNEL_READ_REQUEST
 {
 	ULONG ProcessId;
@@ -92,31 +79,23 @@ public:
 			return (type)false;
 	}
 
-
-	char* ReadStr(ULONG ProcessId, DWORD dAddress, ULONG size)
+	char* ReadString(ULONG ProcessId, ULONG ReadAddress, SIZE_T Size)
 	{
-		if (!dAddress || !ProcessId || !size) {
-			return (char*)"invalid 1";
-		}
+		DWORD Bytes;
+		KERNEL_READ_REQUEST ReadRequest;
 
-		RWM		mem;
-		DWORD	dwBytesRead = 0;
+		ReadRequest.ProcessId = ProcessId;
+		ReadRequest.Address = ReadAddress;
+		ReadRequest.Size = Size;
 
-		mem.pID = ProcessId;
-		mem.retValue = new char[size];
-		mem.size = size;
-		mem.dAddress = dAddress;
-		mem.write = 0;
-
-		if (!DeviceIoControl(hDriver, IOCTL_RPM, &mem, sizeof(RWM), NULL, NULL, &dwBytesRead, NULL))
+		if(DeviceIoControl(hDriver, IO_READ_REQUEST, 
+			&ReadRequest, sizeof(ReadRequest), 
+			&ReadRequest, sizeof(ReadRequest), 0, 0))
 		{
-			const char* a = (const char*)mem.retValue;
-
-			delete[] mem.retValue;
-			return (char*)a;
+			return (char*)&ReadRequest.Response;
+			
 		}
-
-		return (char*)mem.retValue;
+		return (char*)"";
 	}
 
 	bool WriteVirtualMemory(ULONG ProcessId, ULONG WriteAddress,
