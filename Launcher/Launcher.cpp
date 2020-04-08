@@ -19,24 +19,27 @@ printf_s("Found %s : %d\n", DESC, NAME);
 for(int i = 0; i < SIZE; i++) NAME[i] = Driver.ReadVirtualMemory<char>(ProcessId, OFFSET + (i) * sizeof(char), sizeof(char)); \
 printf_s("Found %s : %s\n", DESC, NAME);
 
+using namespace std;
+
 // vkftjdghkshotmailcom
 // baca2131
 
+bool Initialize();
+bool bInit;
+
+KeInterface Driver("\\\\.\\cbl");
+
+DWORD ProcessId;
+DWORD ClientAddress;
+DWORD LocalPlayer;
+
 int main()
 {
-	KeInterface Driver("\\\\.\\cbl");
-
-	SetConsoleTitle(L"Launcher");
-
-	DWORD ProcessId = Driver.GetTargetPid();
-	std::cout << "Found lol Process Id: " << ProcessId << std::endl;
-
-	DWORD ClientAddress = Driver.GetClientModule();
-	std::cout << "Found lol.exe ClientBase: 0x" << std::uppercase << std::hex << ClientAddress << std::endl;
-	
-	// Get address of localplayer
-	DWORD LocalPlayer = Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + 0x349A0E4, sizeof(DWORD));
-	std::cout << "Found LocalPlayer in client.dll: 0x" << std::uppercase << std::hex << LocalPlayer << std::endl;
+	while (!bInit)
+	{
+		bInit = Initialize();
+		Sleep(1000);
+	}
 	
 	GET_SHORT(index, "index", LocalPlayer + (__int32)oGameObject::oObjIndex);
 	GET_INT(team, "team", LocalPlayer + (__int32)oGameObject::oObjTeam);
@@ -97,5 +100,20 @@ int main()
 	//	Sleep(10);
 	//}
 	return 0;
+}
+
+bool Initialize()
+{
+	SetConsoleTitle(L"Launcher");
+
+	ProcessId = Driver.GetTargetPid();
+	ClientAddress = Driver.GetClientModule();
+	LocalPlayer = Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + 0x349A0E4, sizeof(DWORD));
+
+	std::cout << "Found lol Process Id: " << ProcessId << std::endl;
+	std::cout << "Found League of Legends.exe: 0x" << std::uppercase << std::hex << ClientAddress << std::endl;
+	std::cout << "Found LocalPlayer 0x" << std::uppercase << std::hex << LocalPlayer << std::endl;
+
+	return true;
 }
 
