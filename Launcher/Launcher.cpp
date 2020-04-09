@@ -21,6 +21,9 @@ printf_s("Found %s : %s\n", DESC, NAME);
 
 using namespace std;
 
+// GameObject Functions
+Vector3f* GetPosition(DWORD GameObject);
+
 // vkftjdghkshotmailcom
 // baca2131
 
@@ -41,35 +44,11 @@ int main()
 		Sleep(1000);
 	}
 	
-	GET_SHORT(index, "index", LocalPlayer + (__int32)oGameObject::oObjIndex);
-	GET_INT(team, "team", LocalPlayer + (__int32)oGameObject::oObjTeam);
-	GET_FLOAT(health, "health", LocalPlayer + (__int32)AttackableUnit::oObjHealth);
+	GET_SHORT(index, "index", LocalPlayer + static_cast<__int32>(oGameObject::oObjIndex));
+	GET_INT(team, "team", LocalPlayer + static_cast<__int32>(oGameObject::oObjTeam));
+	GET_FLOAT(health, "health", LocalPlayer + static_cast<__int32>(AttackableUnit::oObjHealth));
 
 	GET_CHAR(summoner, "name", LocalPlayer + 0x006C, 9);
-
-	auto chat = Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + (__int32)Client::ChatClient, sizeof(DWORD));
-	printf_s("Chat : %d\n", chat);
-
-	float xx = Driver.ReadVirtualMemory<float>(ProcessId, LocalPlayer + (__int32)oGameObject::oObjPos, sizeof(float));
-	float yy = Driver.ReadVirtualMemory<float>(ProcessId, LocalPlayer + (__int32)oGameObject::oObjPos + sizeof(float), sizeof(float));
-	float zz = Driver.ReadVirtualMemory<float>(ProcessId, LocalPlayer + (__int32)oGameObject::oObjPos + sizeof(float) + sizeof(float), sizeof(float));
-
-	printf_s("Position : %f %f %f\n", xx, yy, zz);
-
-	auto myName = Driver.ReadString(ProcessId, ClientAddress + 0x349A0E4 + 0x006C, sizeof(DWORD));
-	printf_s("myName %s", myName);
-	
-	//Sleep(3000);
-
-	//GET(Position, Vector3f, (__int32)oGameObject::oObjPos);
-
-	
-	//auto chatClient = *(DWORD*)(ClientAddress + (__int32)Client::ChatClient);
-	//printf_s("ChatClient : %d", chatClient);
-	
-	//typedef void(__thiscall* fnPrintChat)(DWORD, const char*, int);
-	//(Driver.ReadVirtualMemory<fnPrintChat>(ProcessId, ClientAddress + 0x349A0E4, sizeof(fnPrintChat)))
-	//(chat, "Test", 0);
 
 	//while (true)
 	//{
@@ -99,6 +78,7 @@ int main()
 	//	
 	//	Sleep(10);
 	//}
+	
 	return 0;
 }
 
@@ -117,3 +97,11 @@ bool Initialize()
 	return true;
 }
 
+Vector3f* GetPosition(DWORD GameObject)
+{
+	const auto xx = Driver.ReadVirtualMemory<float>(ProcessId, GameObject + static_cast<__int32>(oGameObject::oObjPos), sizeof(float));
+	const auto yy = Driver.ReadVirtualMemory<float>(ProcessId, GameObject + static_cast<__int32>(oGameObject::oObjPos) + sizeof(float), sizeof(float));
+	const auto zz = Driver.ReadVirtualMemory<float>(ProcessId, GameObject + static_cast<__int32>(oGameObject::oObjPos) + sizeof(float) + sizeof(float), sizeof(float));
+
+	return new Vector3f(xx, yy, zz);
+}
