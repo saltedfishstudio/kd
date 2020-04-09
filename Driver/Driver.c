@@ -17,7 +17,7 @@ NTKERNELAPI PVOID PsGetProcessSectionBaseAddress(__in PEPROCESS Process);
 PDEVICE_OBJECT pDeviceObject; // our driver object
 UNICODE_STRING dev, dos; // Driver registry paths
 
-ULONG csgoId, ClientAddress;
+ULONG processId, ClientAddress;
 
 // datatype for read request
 typedef struct _KERNEL_READ_REQUEST
@@ -98,7 +98,7 @@ PLOAD_IMAGE_NOTIFY_ROUTINE ImageLoadCallback(PUNICODE_STRING FullImageName,
 		DbgPrintEx(0, 0, "Loaded To Process: %d \n", ProcessId);
 
 		ClientAddress = ImageInfo->ImageBase;
-		csgoId = ProcessId;
+		processId = ProcessId;
 	}
 }
 
@@ -150,9 +150,9 @@ NTSTATUS IoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 	else if (ControlCode == IO_GET_ID_REQUEST)
 	{
 		PULONG OutPut = (PULONG)Irp->AssociatedIrp.SystemBuffer;
-		*OutPut = csgoId;
+		*OutPut = processId;
 
-		DbgPrintEx(0, 0, "id get %#010x", csgoId);
+		DbgPrintEx(0, 0, "id get %#010x", processId);
 		Status = STATUS_SUCCESS;
 		BytesIO = sizeof(*OutPut);
 	}

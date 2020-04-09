@@ -1,21 +1,16 @@
-#include <iostream>
-
 #define VERSION_10_7_314_9802
-#include "Offset.h"
+#ifndef GET_MACRO
+#define GET_MACRO
+#endif
+#ifndef OBJECT_MANAGER
+#define OBJECT_MANAGER
+#endif
 
+#include <iostream>
+#include <vector>
+#include "Offset.h"
 #include "KeInterface.h"
 #include "Vector3f.h"
-
-#define GET(NAME, TYPE, OFFSET) auto NAME = Driver.ReadVirtualMemory<TYPE>(ProcessId, OFFSET, sizeof(TYPE));
-#define GET_CHAR(NAME, OFFSET, SIZE) char NAME[SIZE]; \
-for(int i = 0; i < SIZE; i++) { \
-	auto c = Driver.ReadVirtualMemory<char>(ProcessId, OFFSET + (i) * sizeof(char), sizeof(char)); \
-	if(c=='\0') { \
-		NAME[i] = ' '; \
-	} \
-	NAME[i] = c; \
-}
-
 
 using namespace std;
 
@@ -34,21 +29,56 @@ DWORD ProcessId;
 DWORD ClientAddress;
 DWORD LocalPlayer;
 
+#ifdef GET_MACRO
+
+#define GET(NAME, TYPE, OFFSET) auto NAME = Driver.ReadVirtualMemory<TYPE>(ProcessId, OFFSET, sizeof(TYPE));
+#define GET_CHAR(NAME, OFFSET, SIZE) char NAME[SIZE]; for(int i = 0; i < SIZE; i++) { auto c = Driver.ReadVirtualMemory<char>(ProcessId, OFFSET + (i) * sizeof(char), sizeof(char)); if(c=='\0') NAME[i] = ' '; NAME[i] = c; }
+
+#endif
+#ifdef OBJECT_MANAGER
+
 class GameObject { };
 
 GameObject* GetFirst()
 {
 	typedef GameObject* (__thiscall* fnGetFirst)(void*);
+	
 	auto fn = Driver.ReadVirtualMemory<fnGetFirst>(ProcessId, ClientAddress + oGetFirstObject, sizeof(fnGetFirst));
-	auto objManager = Driver.ReadVirtualMemory<void*>(ProcessId, ClientAddress + (__int32)oObjManager, sizeof(void*));
+	auto objManager = Driver.ReadVirtualMemory<void*>(ProcessId, ClientAddress + oObjManager, sizeof(void*));
+
 	return fn(objManager);
 }
 
 GameObject* GetNext(GameObject * current)
 {
 	typedef GameObject* (__thiscall* fnGetNext)(void*, GameObject*);
-	return reinterpret_cast<fnGetNext>((ClientAddress + oGetNextObject))(*reinterpret_cast<void**>(ClientAddress + (__int32)oObjManager), current);
+	
+	auto fn = Driver.ReadVirtualMemory<fnGetNext>(ProcessId, ClientAddress + oObjManager, sizeof(fnGetNext));
+	auto objManager = Driver.ReadVirtualMemory<void*>(ProcessId, ClientAddress + oObjManager, sizeof(void*));
+	
+	return fn(objManager, current);
 }
+
+std::vector<GameObject*> GetObjectList()
+{
+	std::vector<GameObject*> list;
+
+	auto obj = GetFirst();
+
+	while (obj)
+	{
+		if (obj)
+		{
+			list.push_back(obj);
+		}
+
+		obj = GetNext(obj);
+	}
+
+	return list;
+}
+
+#endif
 
 int main()
 {
@@ -66,23 +96,27 @@ int main()
 
 	GET_CHAR(summoner, LocalPlayer + oObjName, 16);
 	GET_CHAR(championName, LocalPlayer + oChampionName, 16);
+
+	GET_CHAR(gameVersion, ClientAddress + oGameVersion, 32);
 	
 	printf_s("Champion : %s\n", championName);
 	printf_s("Object Name : %s\n", summoner);
 
-	auto obj = GetFirst();
-	
-	while (obj)
-	{
-		auto unit = (GameObject*)obj;
-		if (unit)
-		{
-			GET(objIndex, short, (DWORD)obj + oObjIndex);
-			printf_s("Index : %d ", objIndex);
-		}
+	printf_s("Game Version : %s\n", gameVersion);
 
-		obj = GetNext(obj);
-	}
+	//auto obj = GetFirst();
+	//
+	//while (obj)
+	//{
+	//	auto unit = (GameObject*)obj;
+	//	if (unit)
+	//	{
+	//		GET(objIndex, short, (DWORD)obj + oObjIndex);
+	//		printf_s("Index : %d ", objIndex);
+	//	}
+
+	//	obj = GetNext(obj);
+	//}
 
 	//while (true)
 	//{

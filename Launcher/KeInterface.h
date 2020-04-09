@@ -15,13 +15,6 @@
 // Request to retrieve the base address of client.dll in csgo.exe from kernel space
 #define IO_GET_MODULE_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0704 /* Our Custom Code */, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
-// Offset to force jump action
-#define FORCE_JUMP 0x04F5FD5C
-// offset to local player
-#define LOCAL_PLAYER 0x00AA66D4
-
-#define FFLAGS 0x00000100
-
 typedef struct _KERNEL_READ_REQUEST
 {
 	ULONG ProcessId;
@@ -41,8 +34,6 @@ typedef struct _KERNEL_WRITE_REQUEST
 	ULONG Size;
 
 } KERNEL_WRITE_REQUEST, * PKERNEL_WRITE_REQUEST;
-
-
 
 // interface for our driver
 class KeInterface
@@ -78,26 +69,7 @@ public:
 		else
 			return (type)false;
 	}
-
-	char* ReadString(ULONG ProcessId, ULONG ReadAddress, SIZE_T Size)
-	{
-		DWORD Bytes;
-		KERNEL_READ_REQUEST ReadRequest;
-
-		ReadRequest.ProcessId = ProcessId;
-		ReadRequest.Address = ReadAddress;
-		ReadRequest.Size = Size;
-
-		if(DeviceIoControl(hDriver, IO_READ_REQUEST, 
-			&ReadRequest, sizeof(ReadRequest), 
-			&ReadRequest, sizeof(ReadRequest), 0, 0))
-		{
-			return (char*)&ReadRequest.Response;
-			
-		}
-		return (char*)"";
-	}
-
+	
 	bool WriteVirtualMemory(ULONG ProcessId, ULONG WriteAddress,
 		ULONG WriteValue, SIZE_T WriteSize)
 	{
