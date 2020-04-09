@@ -153,9 +153,9 @@
     <ClCompile Include="Vector3f.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="data.h" />
     <ClInclude Include="KeInterface.h" />
     <ClInclude Include="Macros.h" />
+    <ClInclude Include="Offset.h" />
     <ClInclude Include="Vector3f.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

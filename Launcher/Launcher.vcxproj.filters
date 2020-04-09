@@ -26,13 +26,13 @@
     <ClInclude Include="KeInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="data.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Vector3f.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Macros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Offset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
