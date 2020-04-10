@@ -20,8 +20,8 @@ Vector3f* GetPosition(DWORD GameObject);
 // vkftjdghkshotmailcom
 // baca2131
 
-bool Initialize();
-bool bInit;
+int Initialize();
+int bInit = 1;
 
 KeInterface Driver(R"(\\.\cbl)");
 
@@ -82,10 +82,16 @@ std::vector<GameObject*> GetObjectList()
 
 int main()
 {
-	while (!bInit)
+	while (bInit == 1)
 	{
 		bInit = Initialize();
 		Sleep(1000);
+
+		if(bInit == 2)
+		{
+			cout << "Escape. Initialize result : " << bInit << endl;
+			return 0;
+		}
 	}
 	
 	GET(index, short, LocalPlayer + oObjIndex);
@@ -96,27 +102,9 @@ int main()
 
 	GET_CHAR(summoner, LocalPlayer + oObjName, 16);
 	GET_CHAR(championName, LocalPlayer + oChampionName, 16);
-
-	GET_CHAR(gameVersion, ClientAddress + oGameVersion, 32);
-	
+		
 	printf_s("Champion : %s\n", championName);
 	printf_s("Object Name : %s\n", summoner);
-
-	printf_s("Game Version : %s\n", gameVersion);
-
-	//auto obj = GetFirst();
-	//
-	//while (obj)
-	//{
-	//	auto unit = (GameObject*)obj;
-	//	if (unit)
-	//	{
-	//		GET(objIndex, short, (DWORD)obj + oObjIndex);
-	//		printf_s("Index : %d ", objIndex);
-	//	}
-
-	//	obj = GetNext(obj);
-	//}
 
 	//while (true)
 	//{
@@ -143,7 +131,7 @@ int main()
 	return 0;
 }
 
-bool Initialize()
+int Initialize()
 {
 	SetConsoleTitle(L"Launcher");
 
@@ -155,7 +143,18 @@ bool Initialize()
 	std::cout << "Found League of Legends.exe: 0x" << std::uppercase << std::hex << ClientAddress << std::endl;
 	std::cout << "Found LocalPlayer 0x" << std::uppercase << std::hex << LocalPlayer << std::endl;
 
-	return true;
+	GET_CHAR(gameVersion, ClientAddress + oGameVersion, 32);
+	
+	if (strcmp(gameVersion, BUILD_VERSION) != 0)
+	{
+		std::cout << "Wrong Build Version!" << endl;
+		cout << "Current Version : " << gameVersion << endl;
+		cout << "Script Version : " << BUILD_VERSION << endl;
+
+		return 2;
+	}
+
+	return 0;
 }
 
 Vector3f* GetPosition(DWORD GameObject)

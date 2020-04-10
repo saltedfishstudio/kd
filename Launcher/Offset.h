@@ -1,6 +1,7 @@
 #pragma once
 //#define VERSION_10_7_314_9802
 #ifdef VERSION_10_7_314_9802
+#define BUILD_VERSION "Version 10.7.314.9802 [PUBLIC]"
 
 /* Client */
 #define oChatClient			0x1BF5BD8
