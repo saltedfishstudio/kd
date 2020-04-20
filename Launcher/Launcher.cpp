@@ -11,6 +11,7 @@
 #include "Offset.h"
 #include "KeInterface.h"
 #include "Vector3f.h"
+#include "String.hpp"
 
 using namespace std;
 
@@ -80,6 +81,13 @@ std::vector<GameObject*> GetObjectList()
 
 #endif
 
+#define oObjName 0x6C
+#define oObjPosition 0x1D8
+#define oObjTeam 0x4C
+#define oObjVisible 0x450
+#define oObjIndex 0x20
+#define oObjNetworkID 0xCC
+
 int main()
 {
 	while (bInit == 1)
@@ -94,17 +102,21 @@ int main()
 		}
 	}
 	
-	GET(index, short, LocalPlayer + oObjIndex);
-	GET(Team, int, LocalPlayer + oObjTeam);
+	//GET(index, short, LocalPlayer + oObjIndex);
+	//GET(Team, int, LocalPlayer + oObjTeam);
 
-	GET(currentHealth, float, LocalPlayer + oAtkCurHealth);
-	GET(maxHealth, float, LocalPlayer + oAtkMaxHealth);
+	//GET(currentHealth, float, LocalPlayer + oAtkCurHealth);
+	//GET(maxHealth, float, LocalPlayer + oAtkMaxHealth);
 
-	GET_CHAR(summoner, LocalPlayer + oObjName, 16);
-	GET_CHAR(championName, LocalPlayer + oChampionName, 16);
-		
-	printf_s("Champion : %s\n", championName);
-	printf_s("Object Name : %s\n", summoner);
+	//GET_CHAR(summoner, LocalPlayer + oObjName, 16);
+	//GET_CHAR(championName, LocalPlayer + oChampionName, 16);
+	//	
+	//printf_s("Champion : %s\n", championName);
+	//printf_s("Object Name : %s\n", summoner);
+
+	std::string Name = Driver.ReadStringMemory(ProcessId, LocalPlayer + 0x6C, 16);
+	printf_s("%s", Name.c_str());
+	
 
 	//while (true)
 	//{
@@ -143,25 +155,18 @@ int Initialize()
 	std::cout << "Found League of Legends.exe: 0x" << std::uppercase << std::hex << ClientAddress << std::endl;
 	std::cout << "Found LocalPlayer 0x" << std::uppercase << std::hex << LocalPlayer << std::endl;
 
-	GET_CHAR(gameVersion, ClientAddress + oGameVersion, 32);
+	//GET_CHAR(gameVersion, ClientAddress + oGameVersion, 32);
 	
-	if (strcmp(gameVersion, BUILD_VERSION) != 0)
-	{
-		std::cout << "Wrong Build Version!" << endl;
-		cout << "Current Version : " << gameVersion << endl;
-		cout << "Script Version : " << BUILD_VERSION << endl;
+		//cout << "Current Version : " << gameVersion << endl;
 
-		return 2;
-	}
-
-	return 0;
+		return 0;
 }
 
 Vector3f* GetPosition(DWORD GameObject)
 {
-	const auto xx = Driver.ReadVirtualMemory<float>(ProcessId, GameObject + oObjPos, sizeof(float));
-	const auto yy = Driver.ReadVirtualMemory<float>(ProcessId, GameObject + oObjPos + sizeof(float), sizeof(float));
-	const auto zz = Driver.ReadVirtualMemory<float>(ProcessId, GameObject + oObjPos + sizeof(float) + sizeof(float), sizeof(float));
+	const auto xx = Driver.ReadVirtualMemory<float>(ProcessId, GameObject + oObjPosition, sizeof(float));
+	const auto yy = Driver.ReadVirtualMemory<float>(ProcessId, GameObject + oObjPosition + sizeof(float), sizeof(float));
+	const auto zz = Driver.ReadVirtualMemory<float>(ProcessId, GameObject + oObjPosition + sizeof(float) + sizeof(float), sizeof(float));
 
 	return new Vector3f(xx, yy, zz);
 }

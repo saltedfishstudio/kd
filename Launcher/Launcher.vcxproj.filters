@@ -35,5 +35,8 @@
     <ClInclude Include="Offset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="String.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,92 +1,38 @@
 #pragma once
-//#define VERSION_10_7_314_9802
-#ifdef VERSION_10_7_314_9802
-#define BUILD_VERSION "Version 10.7.314.9802 [PUBLIC]"
 
-/* Client */
-#define oChatClient			0x1BF5BD8
-#define oPrintChat			0x566E70
+/*
+Offset dumper by @Ph4nton
+Mon Apr 20 04:28:21 2020
+*/
 
-/* Game Info */
-#define oGameTime			0x3492FF4
-#define oGmaeInfo			0x306C20
-#define oGameVersion		0x34A3250
-
-/* Renderer */
-#define oDrawCircle			0x4F8C40
-#define oRenderer			0x34BA384
-#define oWorldToScreen		0x92D200
-
-/* Object Manager */
-#define oLocalPlayer		0x349A0E4
-#define oObjManager			0x1BF8598
-#define oGetFirstObject		0x2AEEF0
-#define oGetNextObject		0x2B01C0
-
-/* Spell Helper */
-#define oGetAttackDelay		0x2AA730
-#define oGetAttackCastDelay	0x2AA630
-
-/* Can be banned */
-#define oIssueOrder			0x18A800
-
-/* HUD */
-#define oHudInstance		0x1BF83B4
-
-
-/* oGameObject */
-#define oObjType			0x4
-#define oObjIndex			0x20
-#define oObjTeam			0x4C
-
-#define oObjName			0x6C
-#define oObjNetworkId		0xCC
-
-#define oObjPos				0x1D8
-#define oObjVisibility		0x450
-
-/* oAttackableUnit */
-#define oAtkCurMana			0x47C
-#define oAtkMaxMana			oAtkCurMana		+ 0x10
-
-#define oAtkCurHealth		0xF88
-#define oAtkMaxHealth		oAtkCurHealth	+ 0x10
-
-#define oAtkCooldown		0x126C
-
-#define oAtkBonusAtk		0x13B4
-#define oAtkBaseAtk			0x1960
-
-#define oAtkCritical		0x1458
-
-#define oAtkArmor			0x145C
-#define oAtkBonusArmor		oAtkArmor		+ 0x4
-
-#define oAtkMagicRes		0x1464
-#define oAtkBonusMagicRes	oAtkMagicRes	+ 0x4
-
-#define oAtkMaxMoveSpeed	0x1474
-
-#define oAtkAtkRange		0x147C
-
-#define oAtkAP				0x18E0
-#define oAtkAPMultiplier	0x18F0
-
-#define oAtkMoveSpeed		0x1A50
-
-#define oAtkBuffMgr			0x2308
-#define oAtkSpellBook		0x2AB8
-
-#define oAtkLevel			0x4DEC
-
-/* Obj_AI_Base */
-#define oAIBResourceName	0x240
-
-#define oAIBGold			0x1CBC
-#define oAIBGoldTotal		oAIBGold			+ 0x10
-
-/* Obj_AI_Hero */
-#define oHeroExperience		0x4DA4
-#define oChampionName		0x3578
-
-#endif
+#define BASEADDRESS GetModuleHandle(NULL)
+#define oLocalPlayer 0x34A1908	//A1 ? ? ? ? 85 C0 74 07 05 ? ? ? ? EB 02 33 C0 56
+#define oObjManager 0x1BFF8FC	//8B 0D ? ? ? ? E8 ? ? ? ? FF 77
+#define oGetFirstObject 0x2B22D0	//8B 51 28 85 D2 74 20
+#define oGetNextObject 0x2B35A0	//E8 ? ? ? ? 8B F0 85 F6 75 E4
+#define oIsAlive 0x1457E0	//56 8B F1 8B 06 8B 80 ? ? ? ? FF D0 84 C0 74 19
+#define oIsInhib 0x1EE690	//E8 ? ? ? ? 83 C4 04 84 C0 74 38
+#define oIsNexus 0x1EE790	//E8 ? ? ? ? 83 C4 04 84 C0 75 1E 57
+#define oIsTurret 0x1EEA00	//E8 ? ? ? ? 83 C4 04 84 C0 74 09 5F
+#define oIsMinion 0x1EE850	//E8 ? ? ? ? 83 C4 04 84 C0 74 4A 8B 45
+#define oIsDragon 0x18E8C0	//83 EC 10 A1 ? ? ? ? 33 C4 89 44 24 0C 56 E8
+#define oIsBaron 0x18FD30	//56 E8 ? ? ? ? 68 ? ? ? ? 8B 30
+#define oIsHero 0x1EE810	//E8 ? ? ? ? 83 C4 04 84 C0 75 22 8B 8D
+#define oIsMissile 0x1EE870	//E8 ? ? ? ? 83 C4 04 84 C0 74 1C FF
+#define oIsTargetable 0x69CCD0	//56 8B F1 E8 ? ? ? ? 84 C0 74 3B
+#define oIssueOrder 0x18FD70	//81 EC ? ? ? ? 56 57 8B F9 C7
+#define oGetSpellState 0x4E3B00	//E8 ? ? ? ? 8B F8 8B CB 89
+#define oGetBasicAttack 0x1D91C0	//53 8B D9 B8 ? ? ? ? 8B 93
+#define oGetAttackDelay 0x2ADCE0	//8B 44 24 04 51 F3
+#define oGetAttackCastDelay 0x2ADBE0	//83 EC 0C 53 8B 5C 24 14 8B CB 56 57 8B 03 FF 90
+#define oDrawCircle 0x4FE270	//E8 ? ? ? ? 83 C4 1C 8B 7C 24 28
+#define oWorldToScreen 0x934A70	//83 EC 10 56 E8 ? ? ? ? 8B 08
+#define oGameTime 0x349A5CC	//F3 0F 11 05 ? ? ? ? 8B 49
+#define oGameInfo 0x349BC18	//A1 ? ? ? ? 83 78 08 02 0F 94 C0
+#define oGameVersion 0x5390A0	//8B 44 24 04 BA ? ? ? ? 2B D0
+#define oHudInstance 0x1BFF934	//8B 0D ? ? ? ? 6A 00 8B 49 34 E8 ? ? ? ? B0
+#define oRenderer 0x34BF550	//8B 15 ? ? ? ? 83 EC 08 F3
+#define oD3DRenderer 0x34C1B34	//A1 ? ? ? ? 89 54 24 18
+#define oZoomClass 0x3499F84	//A3 ? ? ? ? 83 FA 10 72 32
+#define oNetClient 0x34A2670	//8B 0D ? ? ? ? 85 C9 74 07 8B 01 6A 01 FF 50 08 8B
+#define oUnderMouseObject 0x348F0B4	//8B 0D ? ? ? ? 89 0D ? ? ? ? 3B 44 24 30

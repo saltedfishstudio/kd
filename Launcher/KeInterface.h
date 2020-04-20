@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include "String.hpp"
 
 /* IOCTL Codes needed for our driver */
 
@@ -69,26 +70,47 @@ public:
 		else
 			return (type)false;
 	}
-	
-	bool WriteVirtualMemory(ULONG ProcessId, ULONG WriteAddress,
-		ULONG WriteValue, SIZE_T WriteSize)
+
+	std::string ReadStringMemory(ULONG ProcessId, ULONG ReadAddress,
+		SIZE_T Size)
 	{
 		if (hDriver == INVALID_HANDLE_VALUE)
-			return false;
-		DWORD Bytes;
+			return (std::string)nullptr;
 
-		KERNEL_WRITE_REQUEST  WriteRequest;
-		WriteRequest.ProcessId = ProcessId;
-		WriteRequest.Address = WriteAddress;
-		WriteRequest.Value = WriteValue;
-		WriteRequest.Size = WriteSize;
+		DWORD Return, Bytes;
+		KERNEL_READ_REQUEST ReadRequest;
 
-		if (DeviceIoControl(hDriver, IO_WRITE_REQUEST, &WriteRequest, sizeof(WriteRequest),
-			0, 0, &Bytes, NULL))
-			return true;
+		ReadRequest.ProcessId = ProcessId;
+		ReadRequest.Address = ReadAddress;
+		ReadRequest.Size = Size;
+
+		// send code to our driver with the arguments
+		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest,
+			sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), 0, 0))
+			return *(String*)&ReadRequest.Response;
 		else
-			return false;
+			return (std::string)nullptr;
 	}
+	
+	//bool WriteVirtualMemory(ULONG ProcessId, ULONG WriteAddress,
+	//	ULONG WriteValue, SIZE_T WriteSize)
+	//{
+	//	if (hDriver == INVALID_HANDLE_VALUE)
+	//		return false;
+	//	DWORD Bytes;
+
+	//	KERNEL_WRITE_REQUEST  WriteRequest;
+	//	WriteRequest.ProcessId = ProcessId;
+	//	WriteRequest.Address = WriteAddress;
+	//	WriteRequest.Value = WriteValue;
+	//	WriteRequest.Size = WriteSize;
+
+	//	if (DeviceIoControl(hDriver, IO_WRITE_REQUEST, &WriteRequest, sizeof(WriteRequest),
+	//		0, 0, &Bytes, NULL))
+	//		return true;
+	//	else
+	//		return false;
+	//}
 
 	DWORD GetTargetPid()
 	{
