@@ -95,7 +95,7 @@ int main()
 		bInit = Initialize();
 		Sleep(1000);
 
-		if(bInit == 2)
+		if (bInit == 2)
 		{
 			cout << "Escape. Initialize result : " << bInit << endl;
 			return 0;
